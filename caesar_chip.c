@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 	
 	switch(argc) {
 		case 1:
-			printf("Enter %s -h for help\n", *argv);
+			printf("Enter '%s -h' for help\n", *argv);
 			return -1;
 		case 2:
 			if (!strcmp(*(argv+1), "-h"))
@@ -80,12 +80,15 @@ int main(int argc, char **argv)
             for(int i = 0; i < 3; i++)
             {
                 if ((*(*(argv+1)+i) == *(f+i))) continue;
-                else return -1;
+                else printf("Enter '%s -h' for help\n", *argv); return -1;
             }
             
             int *de_data = de_file(*(argv+1)+3, DEFAULT_SHIFTING);
             printf("%ls\n", de_data);
             free(de_data);
+		default :
+			printf("Enter '%s -h' for help\n", *argv);
+			return -1;
                 
     }
 	return 0;
