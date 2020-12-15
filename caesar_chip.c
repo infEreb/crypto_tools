@@ -15,8 +15,8 @@ int *de_file(const char *file_name, int shift) // decrypt/encrypt data function
     FILE *data_file = fopen(file_name, "r");
     if(data_file == NULL)
     {
-        printf("Error opening file.\n");
-        exit(1);
+        fprintf(stderr, "Error opening file.\n");
+		 exit(-1);
     }
     FILE *iter_file = data_file;
     
@@ -86,10 +86,13 @@ int main(int argc, char **argv)
             int *de_data = de_file(*(argv+1)+3, DEFAULT_SHIFTING);
             printf("%ls\n", de_data);
             free(de_data);
+
+			break;
 		default :
 			printf("Enter '%s -h' for help\n", *argv);
 			return -1;
                 
     }
+
 	return 0;
 }
