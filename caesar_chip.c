@@ -174,6 +174,7 @@ int main(int argc, char **argv)
 						;
 						int *de_data = de_file(*(argv+i)+3, shift);
 						printf("%ls\n", de_data);
+						free(de_data);
 						break;
 
 					default:
