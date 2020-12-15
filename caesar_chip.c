@@ -21,7 +21,7 @@ int help_message(void)
 
 int *de_file(const char *file_name, int shift) // decrypt/encrypt data
 {
-    const int downReg_end = 'z' - shift;
+    const int lowReg_end = 'z' - shift;
     const int upReg_end = 'Z' - shift;
     
     FILE *data_file = fopen(file_name, "r");
@@ -60,9 +60,9 @@ int *de_file(const char *file_name, int shift) // decrypt/encrypt data
             continue;
         }
         
-        if (*data_iter >= 'a' && *data_iter > downReg_end)
+        if (*data_iter >= 'a' && *data_iter > lowReg_end)
         {
-        	*data_iter = 'a' + *data_iter - downReg_end - 1;
+        	*data_iter = 'a' + *data_iter - lowReg_end - 1;
         	data_iter++;
 			continue;
         }
