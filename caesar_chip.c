@@ -45,11 +45,15 @@ int *de_file(const char *file_name, int shift) // decrypt/encrypt data
 		return data;
 	}
     
-    while((*data_iter = fgetc(iter_file)) != EOF)
+	int iter = 0;
+    while((*data_iter = fgetc(iter_file)) != EOF && iter < MAX_LENGHT-1)
     {
         data_iter++;
+		iter++;
     }
+	*data_iter = EOF;
     data_iter = data;
+
     while(*data_iter != EOF)
     {
         //printf("%c - %d\n", *data_iter, *data_iter);
@@ -143,6 +147,7 @@ int main(int argc, char **argv)
 						;
 						int *de_data = de_file(*(argv+i)+3, shift);
 						printf("%ls\n", de_data);
+						free(de_data);
 						break;
 
 					default:
@@ -174,6 +179,7 @@ int main(int argc, char **argv)
 						;
 						int *de_data = de_file(*(argv+i)+3, shift);
 						printf("%ls\n", de_data);
+						free(de_data);
 						break;
 
 					default:
