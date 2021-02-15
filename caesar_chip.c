@@ -3,7 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#define HELP_MESS "Ceaser_Chiper 0.1 created by ie.\n\nOptions:\n\t-h - show this message.\n\n\t-f=<path/to/file> - input encrypt/decrypt data file.\n\n\t-c=<shift_count> - count of shifting from 'a' (3 as default)."
+#define HELP_MESS "Ceaser_Cipher 0.2 created by ie.\n\nOptions:\n\t-h - show this message.\n\n\t-f=<path/to/file> - input encrypt/decrypt data file.\n\n\t-d - decrypt file data (left side shifting).\n\n\t-e - encrypt file data (right side shifting).\n\n\t-c=<shift_count> - count of shifting from 'a' (3 as default)."
 
 #define MAX_LENGHT 1000 // lenght of encrypt/decrypt message
 #define DEFAULT_SHIFTING 3
@@ -11,7 +11,11 @@
 
 #define HELP_FLAG "-h"
 #define FILE_FLAG "-f="
+#define DECRYPT_FLAG "-d"
+#define ENCRYPT_FLAG "-e"
 #define SHIFT_FLAG "-c="
+
+#define DEFAULT_ACTION "-e"
 
 int help_message(void)
 {
@@ -19,6 +23,114 @@ int help_message(void)
 	return -1;
 }
 
+int *file_data_read(const char *file_name, int *data_arr)
+{
+	FILE *file_data = fopen(file_name, "r");
+	int *temp = data_arr;
+
+	if(file_data != NULL)
+	{
+		int i = 0;
+		while(i < MAX_LENGHT-1 && (*data_arr = fgetc(file_data)) != EOF)
+		{
+			data_arr++;
+			i++;
+		}
+		*data_arr = '\0';
+
+		fclose(file_data);
+		return temp;
+	}
+	else
+	{
+		fprintf(stderr, "Error opening file...\n");
+		return NULL;
+	}
+}
+
+int *decrypt_data(int *data_arr, int shift) //
+{
+	const int lowCase_end = 'a' + shift;
+	const int upCase_end = 'A' + shift;
+
+	int *temp = data_arr;
+	
+	if(shift <= 0 || shift >= 26)
+	{
+		return data_arr;
+	}
+	else
+	{
+		while(*data_arr != '\0')
+		{
+			if(!isalpha(*data_arr))
+				continue;
+
+			if (*data_arr >= 'a' && *data_arr < lowCase_end)
+        	{
+        		*data_arr = 'z' - *data_arr + lowCase_end + 1;
+        		data_arr++;
+				continue;
+        	}
+			else if (*data_arr >= 'A' && *data_arr < upCase_end)
+			{
+        		*data_arr = 'Z' - *data_arr + upCase_end + 1;
+        		data_arr++;
+				continue;
+			}
+
+			*data_arr = *data_arr - shift;
+			data_arr++;
+		}
+
+		*data_arr = '\0';
+		return temp;
+	}
+}
+
+int *encrypt_data(int *data_arr, int shift) // 
+{
+	const int lowCase_end = 'z' - shift;
+	const int upCase_end = 'Z' - shift;
+	
+	int *temp = data_arr;
+
+	if(shift <= 0 || shift >= 26)
+	{
+		return data_arr;
+	}
+	else
+	{
+		while(*data_arr != '\0')
+		{
+			if(!isalpha(*data_arr))
+			{
+				data_arr++;
+				continue;
+			}
+
+			if (*data_arr <= 'z' && *data_arr > lowCase_end)
+        	{
+        		*data_arr = 'a' + *data_arr - lowCase_end - 1;
+        		data_arr++;
+				continue;
+        	}
+			else if (*data_arr <= 'Z' && *data_arr > upCase_end)
+			{
+        		*data_arr = 'A' + *data_arr - upCase_end - 1;
+        		data_arr++;
+				continue;
+			}
+
+			*data_arr = *data_arr + shift;
+			data_arr++;
+		}
+
+		*data_arr = '\0';
+		return temp;
+	}
+}
+/*
 int *de_file(const char *file_name, int shift) // decrypt/encrypt data
 {
     const int lowReg_end = 'z' - shift;
@@ -64,15 +176,15 @@ int *de_file(const char *file_name, int shift) // decrypt/encrypt data
             continue;
         }
         
-        if (*data_iter >= 'a' && *data_iter > lowReg_end)
+        if (*data_iter >= 'a' && *data_iter > lowreg_end)
         {
-        	*data_iter = 'a' + *data_iter - lowReg_end - 1;
+        	*data_iter = 'a' + *data_iter - lowreg_end - 1;
         	data_iter++;
 			continue;
         }
-		else if (*data_iter <= 'Z' && *data_iter > upReg_end)
+		else if (*data_iter <= 'z' && *data_iter > upreg_end)
 		{
-        	*data_iter = 'A' + *data_iter - upReg_end - 1;
+        	*data_iter = 'a' + *data_iter - upreg_end - 1;
         	data_iter++;
 			continue;
 		}
@@ -83,13 +195,17 @@ int *de_file(const char *file_name, int shift) // decrypt/encrypt data
     
     return data;
 }
-
+*/
 char flag_definer(char *flag)
 {
 		if(*flag == '-')
 		{
 			if (!strcmp(flag, HELP_FLAG))
 				return 'h';
+			if (!strcmp(flag, DECRYPT_FLAG))
+				return 'd';
+			if (!strcmp(flag, ENCRYPT_FLAG))
+				return 'e';
 			if (*(flag+2) == '=')
 			{
 				if (*(flag+1) == 'f')
@@ -118,8 +234,14 @@ int main(int argc, char **argv)
                 else return help_message();
             }
             
-            int *de_data = de_file(*(argv+1)+3, DEFAULT_SHIFTING);
-            printf("%ls\n", de_data);
+			int *de_data = (int *)malloc(MAX_LENGHT);
+
+			if((de_data = file_data_read(*(argv+1)+3, de_data)) != NULL)
+				de_data = encrypt_data(de_data, DEFAULT_SHIFTING);
+			else
+				return -1;
+
+            printf("%ls", de_data);
             free(de_data);
 
 			break;
@@ -127,6 +249,7 @@ int main(int argc, char **argv)
 		case 3:
 			;
 			char fg;
+			char de;
 			int shift = DEFAULT_SHIFTING;
 			
 			for(int i = 1; i <= 2; i++)
@@ -137,6 +260,22 @@ int main(int argc, char **argv)
 			for(int i = 1; i <= 2; i++)
 			{
 				fg = flag_definer(*(argv+i));
+				if (fg == 'd')
+				{
+					de = fg;
+					break;
+				}
+				else if (fg == 'e')
+				{
+					de = fg;
+					break;
+				}
+
+			}
+
+			for(int i = 1; i <= 2; i++)
+			{
+				fg = flag_definer(*(argv+i));
 				switch(fg)
 				{
 					case 'h':
@@ -144,10 +283,10 @@ int main(int argc, char **argv)
 						break;
 
 					case 'f':
-						;
-						int *de_data = de_file(*(argv+i)+3, shift);
-						printf("%ls\n", de_data);
-						free(de_data);
+						//if()
+						//int *de_data = de_file(*(argv+i)+3, shift);
+						//printf("%ls\n", de_data);
+						//free(de_data);
 						break;
 
 					default:
@@ -177,9 +316,9 @@ int main(int argc, char **argv)
 
 					case 'f':
 						;
-						int *de_data = de_file(*(argv+i)+3, shift);
-						printf("%ls\n", de_data);
-						free(de_data);
+						//int *de_data = de_file(*(argv+i)+3, shift);
+						//printf("%ls\n", de_data);
+						//free(de_data);
 						break;
 
 					default:
