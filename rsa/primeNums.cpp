@@ -41,7 +41,6 @@ bool CPrimeNums::isTimeToStopCalcBound(unsigned __int64 num) {              // s
 
 unsigned __int64 CPrimeNums::CalculateNext() {                              // calculates next prime num by list
     unsigned __int64 last_num = Get()->back()->Get() + 1;
-    //double iter = std::sqrt(last_num);
     while(!isTimeToStopCalcNext(last_num)) {
         last_num++;
     }
@@ -59,7 +58,6 @@ unsigned __int64 CPrimeNums::CalculateNext(unsigned __int64 number) {
     while(!isTimeToStopCalcNext(last_num)) {
         last_num++;
     }
-    //m_primeNums->push_back(new CPrime(last_num));
 
     return last_num;
 }

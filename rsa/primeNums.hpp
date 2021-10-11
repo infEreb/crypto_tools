@@ -32,7 +32,7 @@ namespace prime {
 
         unsigned __int64 CalculateBound(unsigned __int64 boundNum);         // Calculates all prime nums that <= boundNum
         unsigned __int64 CalculateNext();                                   // Calculates next prime num by list
-        unsigned __int64 CalculateNext(unsigned __int64 number);               // Calculates next prime num by num and 
+        unsigned __int64 CalculateNext(unsigned __int64 number);            // Calculates next prime num by num and 
                                                                             // return this without add to list
 
         std::string ToString();
