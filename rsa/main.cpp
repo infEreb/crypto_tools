@@ -1,33 +1,34 @@
 #include <iostream>
 #include <fstream>
 
-#include "primeNums.hpp"
-#include "prime.hpp"
+#include "./primes/primeNums.hpp"
+#include "./primes/prime.hpp"
 
 using namespace prime;
 
 int main() {
-    const std::string f_path = "primes.txt";
+    const std::string f_path = "primes.dat";
     
     CPrimeNums *primes = new CPrimeNums();
 
-    //
     // ADD NUMBERS FROM THE FILE
-    //
-    std::ifstream if_primes(f_path);
-    primes->Load(if_primes);
+    std::ifstream if_file(f_path);
+    primes->Load(if_file);
 
-    //
+
     // PRINT NUMBERS
-    //
     std::cout << primes->ToString() << std::endl;
 
-    //primes->CalculateNext();
-    unsigned __int64 prime = primes->CalculateBound(170);
-    unsigned __int64 target_prime = primes->CalculateNext(1000000000000);
+    // some calculates
+    unsigned __int64 prime = primes->CalculateBound(5);
+    unsigned __int64 target_prime = primes->CalculateNext(2000000000000000);
 
+
+    // Save prime nums and close file
     std::ofstream of_file(f_path);
-    //primes->Save(of_file);
+    primes->Save(of_file);
+    if_file.close();
+    of_file.close();
 
     std::cout << primes->ToString() << std::endl;
     std::cout << target_prime << std::endl;
