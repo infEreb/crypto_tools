@@ -25,17 +25,19 @@ namespace bin {
 
         const CBinStream *Get();
         CBinStream *GetHeader();
+        void SetHeader(CBinStream *header);
         CBinStream *GetEnc();
         CBinStream *GetDec();
         int Random();
         int Random(int begin, int end);
         int Random(std::array<unsigned char, 4> numbers);
 
+        const CBinStream *KeyGenerate();
         bool Initialization(CBinStream header);
-        CBinStream *Encrypt(CBinStream stream);
-        void Encrypt(CBinStream stream, CBinStream *encStream);
-        CBinStream *Decrypt(CBinStream stream);
-        void Decrypt(CBinStream stream, CBinStream *decStream);
+        CBinStream *Encrypt(CBinStream *stream);
+        void Encrypt(CBinStream *stream, CBinStream *encStream);
+        CBinStream *Decrypt(CBinStream *stream);
+        void Decrypt(CBinStream *stream, CBinStream *decStream);
 
     };
 };

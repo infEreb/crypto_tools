@@ -56,6 +56,41 @@ void CBinStream::Invert(int beginIndex, int endIndex) {
         std::iter_swap(m_stream->begin() + beginIndex + i, m_stream->begin() + endIndex - i);
     }
 }
+char CBinStream::GetBit(char byte, char bit_index) {
+            if(bit_index >= 0 && bit_index <= 7) {
+                return byte & (1 << bit_index);
+            }
+            return -1;
+        }
+
+bool CBinStream::Read(std::ifstream &file, size_t byteCount) {
+    if(file.is_open() && file) {
+        Clear();
+        file.seekg(0, file.end);
+        int len = file.tellg();
+        file.seekg(0, file.beg);
+
+        if(len <= byteCount) {
+            byteCount = len;
+        }
+        char *str_c = new char[byteCount+1];
+        size_t readed;
+        file.read(str_c, byteCount+1);
+        str_c[byteCount] = '\0';
+        readed = file.gcount();
+
+        if(!readed) {
+            return true;
+        }
+
+        *this << str_c;
+        delete[] str_c;
+
+    } else {
+        return true;
+    }
+    return false;
+}
 
 CBinStream& CBinStream::operator<< (const CBinStream &stream) {
     for(auto byte : *stream.m_stream) {
@@ -86,21 +121,23 @@ CBinStream& CBinStream::operator<< (const short &sh_) {
 CBinStream& CBinStream::operator<< (const char &ch_) {
     char nTemp;
     unsigned char part;
-    for(int i = sizeof(ch_) - 1; i >= 0; i--) {
-        nTemp = ch_;
-        part = (nTemp & (0xFF << i*8)) >> i*8;              // 11111111 00000000 00000000 00000000
-        m_stream->push_back(part);
-    }
+    m_stream->push_back(ch_);
+    // for(int i = sizeof(ch_) - 1; i >= 0; i--) {
+    //     nTemp = ch_;
+    //     part = (nTemp & (0xFF << i*8)) >> i*8;              // 11111111 00000000 00000000 00000000
+    //     m_stream->push_back(part);
+    // }
     return *this;
 }
 CBinStream& CBinStream::operator<< (const unsigned char &ch_) {
     char nTemp;
     unsigned char part;
-    for(int i = sizeof(ch_) - 1; i >= 0; i--) {
-        nTemp = ch_;
-        part = (nTemp & (0xFF << i*8)) >> i*8;              // 11111111 00000000 00000000 00000000
-        m_stream->push_back(part);
-    }
+    m_stream->push_back(ch_);
+    // for(int i = sizeof(ch_) - 1; i >= 0; i--) {
+    //     nTemp = ch_;
+    //     part = (nTemp & (0xFF << i*8)) >> i*8;              // 11111111 00000000 00000000 00000000
+    //     m_stream->push_back(part);
+    // }
     return *this;
 }
 CBinStream& CBinStream::operator<< (const std::vector<int> &int_vec) {
@@ -151,15 +188,23 @@ CBinStream& CBinStream::operator<< (const std::vector<unsigned char> &ch_vec) {
     }
     return *this;
 }
+CBinStream& CBinStream::operator<< (const char *str_) {
+    while(*str_) {
+        *this << *str_;
+        str_++;
+    }
+    return *this;
+}
 CBinStream& CBinStream::operator<< (const std::string &string) {
     char nTemp;
     unsigned char part;
     for(auto el : string) {
-        for(int i = sizeof(el) - 1; i >= 0; i--) {
-            nTemp = el;
-            part = (el & (0xFF << i*8)) >> i*8;              // 11111111 00000000 00000000 00000000
-            m_stream->push_back(part);
-        }
+        m_stream->push_back(el);
+        // for(int i = sizeof(el) - 1; i >= 0; i--) {
+        //     nTemp = el;
+        //     part = (el & (0xFF << i*8)) >> i*8;              // 11111111 00000000 00000000 00000000
+        //     m_stream->push_back(part);
+        // }
     }
     return *this;
 }
@@ -168,10 +213,12 @@ CBinStream& CBinStream::operator<< (std::ifstream &file_in) {
         std::string str;
         while(std::getline(file_in, str)) {
             *this << str;
+            *this << '\n';
         }
     }
     return *this;
 }
+
 
 CBinStream& CBinStream::operator>> (int &int_) {
     int nTemp = 0x0;
@@ -234,7 +281,7 @@ CBinStream& CBinStream::operator>> (std::string &string) {
         for(auto ch : *m_stream) {
             string.push_back(ch);
         }
-        Clear();
+        //Clear();
     }
     return *this;
 }
@@ -244,14 +291,35 @@ CBinStream& CBinStream::operator>> (std::ofstream &file_out) {
     file_out << str;
     return *this;
 }
-
+CBinStream& CBinStream::operator>> (std::ostream &stream_out) {
+    
+    return *this;
+}
 
 const std::string CBinStream::ToString() {
+    std::string str("{ ");
+    
+    if(Size() == 1) {
+        char ch = (*m_stream)[0];
+        if(ch == 0xA) {
+            str.append("\\n");
+        } else if(ch >= 0x20) {
+            str.push_back(ch);
+        }
+    } else {
+        *this >> str;
+    }
+    
+    str.append(" }");
+    
+    return str;
+}
+const std::string CBinStream::ToHexString() {
     std::stringstream ss;
     ss << "{ ";
     for(auto byte : *m_stream) {
-        //ss << std::hex << std::setw(2) << std::setfill('0') << (int)byte << " ";
-        ss << byte << " ";
+        ss << std::hex << std::setw(2) << std::setfill('0') << (int)byte << " ";
+        //ss << byte << " ";
     }
     ss << "}";
     return ss.str();

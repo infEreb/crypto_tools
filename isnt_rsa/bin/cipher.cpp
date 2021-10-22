@@ -36,6 +36,9 @@ CBinStream *CCipher::GetDec() {
 CBinStream *CCipher::GetHeader() {
     return m_header;
 }
+void CCipher::SetHeader(CBinStream *header) {
+    *m_header << *header;
+}
 int CCipher::Random() {
     return rand();
 }
@@ -51,26 +54,35 @@ int CCipher::Random(std::array<unsigned char, 4> numbers) {
 }
 
 
+const CBinStream *CCipher::KeyGenerate() {
+    m_header->Clear();
+    unsigned char opNum=Random(1, 2), stepNum=Random(m_steps),      // define subkeys
+        numOfNums=Random(128, 255);
+    std::vector<unsigned char> numbers;
+    *m_header << opNum << stepNum << numOfNums;                     // add subkeys to the header (key)
+
+    for(int i = 0; i < numOfNums; i++) {                            // generate random numbers for the key
+        numbers.push_back(Random(0, 255));
+        *m_header << numbers.back();                             // and add them
+        m_numbers->push_back(numbers[i]);
+    }
+    m_opNum=opNum, m_stepNum=stepNum, m_numOfNumbers=numOfNums;
+
+    return m_header;
+}
 bool CCipher::Initialization(CBinStream header) {
 
     return true;
 }
 
-CBinStream *CCipher::Encrypt(CBinStream stream) {
+CBinStream *CCipher::Encrypt(CBinStream *stream) {
     m_encStream->Clear();
-    m_header->Clear();
-    unsigned char opNum=Random(1, 2), stepNum=Random(m_steps),      // define subkeys
-        numOfNums=Random(3, 255);
-    *m_header << opNum << stepNum << numOfNums;                     // add subkeys to the header (key)
-    for(int i = 0; i < numOfNums; i++) {                            // generate random numbers for the key
-        m_numbers->push_back(Random(0, 255));
-        *m_header << m_numbers->back();                             // and add them
-    }
 
-    *m_encStream << *m_header << stream;
+    //std::cout << m_header->ToHexString() << std::endl; ////////////////////////////////////
+    *m_encStream /*<< *m_header*/ << *stream;
 
     // REWRITE !!!!!!!!!!!!!!!!!! TEMP SOLUTION
-    m_opNum=opNum, m_stepNum=stepNum, m_numOfNumbers=numOfNums;
+
     int stepIter = 1;
     int numIndex = 0;
     for(auto i = 0; i < m_encStream->Size(); i++) {
@@ -101,23 +113,15 @@ CBinStream *CCipher::Encrypt(CBinStream stream) {
             }
         }
     }
+
     return m_encStream;
 }
-void CCipher::Encrypt(CBinStream stream, CBinStream *enc_stream) {
+void CCipher::Encrypt(CBinStream *stream, CBinStream *enc_stream) {
     enc_stream->Clear();
-    m_header->Clear();
-    unsigned char opNum=Random(1, 2), stepNum=Random(m_steps),      // define subkeys
-        numOfNums=Random(3, 255);
-    *m_header << opNum << stepNum << numOfNums;                     // add subkeys to the header (key)
-    for(int i = 0; i < numOfNums; i++) {                            // generate random numbers for the key
-        m_numbers->push_back(Random(0, 255));
-        *m_header << m_numbers->back();                             // and add them
-    }
 
-    *enc_stream << *m_header << stream;
+    *enc_stream << *stream;
 
     // REWRITE !!!!!!!!!!!!!!!!!! TEMP SOLUTION
-    m_opNum=opNum, m_stepNum=stepNum, m_numOfNumbers=numOfNums;
     int stepIter = 1;
     int numIndex = 0;
     for(auto i = 0; i < enc_stream->Size(); i++) {
@@ -151,9 +155,9 @@ void CCipher::Encrypt(CBinStream stream, CBinStream *enc_stream) {
     return;
 }
 
-CBinStream *CCipher::Decrypt(CBinStream stream) {
+CBinStream *CCipher::Decrypt(CBinStream *stream) {
     m_decStream->Clear();
-    *m_decStream << stream;
+    *m_decStream << *stream;
 
     int stepIter = 1;
     int numIndex = 0;
@@ -188,9 +192,9 @@ CBinStream *CCipher::Decrypt(CBinStream stream) {
 
     return m_decStream;
 }
-void CCipher::Decrypt(CBinStream stream, CBinStream *dec_stream) {
+void CCipher::Decrypt(CBinStream *stream, CBinStream *dec_stream) {
     dec_stream->Clear();
-    *dec_stream << stream;
+    *dec_stream << *stream;
 
     int stepIter = 1;
     int numIndex = 0;
